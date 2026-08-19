@@ -1,6 +1,8 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 python-telegram-bot==21.4
 chromadb==0.5.5
 sentence-transformers==3.0.1
 Pillow==10.4.0
-torch==2.7.1
+torch==2.7.1+cpu
 python-dotenv==1.0.1
