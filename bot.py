@@ -23,6 +23,11 @@ logger = logging.getLogger(__name__)
 # نسبة التشابه اللي لو أعلى منها، بنعتبر التصميم موجود بالفعل في الأرشيف
 DUPLICATE_THRESHOLD = 90.0
 
+# الحد الأدنى عشان نعتبر النتيجة "مرشح جدي" مش مجرد تشابه عام في الألوان/التركيب.
+# موديلات CLIP بطبيعتها بترجع نسب تشابه عالية نسبيًا حتى بين صور مالهاش علاقة ببعض،
+# فالنسب اللي تحت الحد ده مش معناها تشابه حقيقي في التصميم
+MIN_RELEVANT_SIMILARITY = 70.0
+
 # تخزين مؤقت (في الميموري) لآخر embedding و file_id بعتهم كل مستخدم، عشان لو استخدم /add بعدها
 _last_embedding: dict[int, list[float]] = {}
 _last_file_id: dict[int, str] = {}
@@ -49,21 +54,24 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     matches = search_similar(embedding, top_k=5)
 
-    if not matches or matches[0]["similarity"] < 50:
+    # بنفلتر النتايج الضعيفة اللي مش هتبقى مرشح حقيقي، بدل ما نوريها كأنها تشابه فعلي
+    relevant_matches = [m for m in matches if m["similarity"] >= MIN_RELEVANT_SIMILARITY]
+
+    if not relevant_matches:
         await searching_msg.edit_text(
-            "معلقتش على حاجة مشابهة في الأرشيف.\n"
+            "معلقتش على حاجة مشابهة فعليًا في الأرشيف.\n"
             "لو التصميم ده جديد، ابعت /add عشان أضيفه."
         )
         return
 
     reply_lines = ["أقرب التصاميم المشابهة:\n"]
-    for m in matches:
+    for m in relevant_matches:
         reply_lines.append(f"• كود {m['id']} — تشابه {m['similarity']}%")
-    reply_lines.append("\nلمشاهدة صورة أي كود منهم، ابعتي /get متبوع بالكود، مثلاً:\n/get " + matches[0]["id"])
+    reply_lines.append("\nلمشاهدة صورة أي كود منهم، ابعتي /get متبوع بالكود، مثلاً:\n/get " + relevant_matches[0]["id"])
 
-    if matches[0]["similarity"] >= DUPLICATE_THRESHOLD:
-        reply_lines.append(f"\nالتصميم ده يبدو إنه موجود بالفعل (كود {matches[0]['id']}).")
-        mark_reused(matches[0]["id"])
+    if relevant_matches[0]["similarity"] >= DUPLICATE_THRESHOLD:
+        reply_lines.append(f"\nالتصميم ده يبدو إنه موجود بالفعل (كود {relevant_matches[0]['id']}).")
+        mark_reused(relevant_matches[0]["id"])
     else:
         reply_lines.append("\nلو مفيش تصميم مطابق فعلاً، ابعت /add لإضافته كتصميم جديد.")
 
