@@ -59,7 +59,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not relevant_matches:
         await searching_msg.edit_text(
-            "معلقتش على حاجة مشابهة فعليًا في الأرشيف.\n"
+            "ملقيتش حاجة مشابهة فعليًا في الأرشيف.\n"
             "لو التصميم ده جديد، ابعت /add عشان أضيفه."
         )
         return
