@@ -1,0 +1,24 @@
+# متغيرات البيئة (فيها التوكن، متترفعش على GitHub أبدًا)
+.env
+
+# الأرشيف المحلي بتاع ChromaDB (بيانات المستخدم مش كود)
+chroma_data/
+
+# بيئة Python الافتراضية
+venv/
+.venv/
+env/
+
+# ملفات Python المؤقتة
+__pycache__/
+*.pyc
+*.pyo
+
+# كاش موديلات Hugging Face لو محفوظ جوه المشروع
+.cache/
+
+# ملفات النظام والمحرر
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
